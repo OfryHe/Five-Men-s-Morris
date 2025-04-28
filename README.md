@@ -33,6 +33,6 @@ Five Men's Morris Rules:
 Important classes:
   1. Game(responsible for creating the game itself and playing a singular game):
 
-       -play_one_game : responsible for playing a single game(has many versions that include different agent styles such as: random player against random agent, random player against smart agent etc...)
+       -  play_one_game : responsible for playing a single game(has many versions that include different agent styles such as: random player against random agent, random player against smart agent etc...)
        -
   
