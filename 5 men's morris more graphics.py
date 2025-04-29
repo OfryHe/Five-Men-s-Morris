@@ -15,35 +15,36 @@ from kivy.uix.popup import Popup
 from kivy.core.window import Window
 
 
-class FirstScreen(FloatLayout):
+class FirstScreen(FloatLayout):#The main screen of the game, handling user interface elements and game flow.
     def __init__(self):
         FloatLayout.__init__(self)
-        self.outside_board_graph = []
-        self.inside_board_graph = []
-        self.what_game_size = 1
-        self.my_turn = 1
-        self.part = 0
-        self.which_touch = 1
-        self.chosen_piece = []
-        self.removing_piece = []
-        self.removing = False
-        self.difficulty = 1
-        self.addPlayerTypeButton()
-        self.game_rules()
-        self.game_size()
-        self.addButton()
-        self.controller = Controller()
-        self.addCellsToBoard()
-        self.agent_turn_UI()
-        self.agent_soldiers_UI()
-        self.player_turn_UI()
-        self.player_soldiers_UI()
-        self.addResultLabel()
-        self.tutorial()
-        self.tutorial = False
-        self.agent_turn(1)
+        self.outside_board_graph = []#A list of Cell widgets representing the outer board.
+        self.inside_board_graph = []#A list of Cell widgets representing the inner board.
+        self.what_game_size = 1#An indicator of the current game board size (1 or 2).
+        self.my_turn = 1#Keeps track of the current turn number in the game.
+        self.part = 0#Indicates the current phase of the game (placement, moving).
+        self.which_touch = 1#Used to track the number of touches for moving pieces (1 for selecting, 2 for destination).
+        self.chosen_piece = []#Stores the [board, row, col] of the piece selected for moving.
+        self.removing_piece = []#Stores the [board, row, col] of the piece to be removed after forming a mill.
+        self.removing = False#A flag indicating if the player is currently in the process of removing an opponent's piece.
+        self.difficulty = 1#Represents the difficulty level of the AI agent (1: Dumb, 2: ANN, 3: Dictionary).
+        self.addPlayerTypeButton()#Activates the button that is responsible for changing the difficulty.
+        self.game_rules()#Activates the button that shows the game's rules.
+        self.game_size()#Activates the button that is responsible for changing the size.
+        self.addButton()#Activates the button that is responsible for starting a new game.
+        self.controller = Controller()#An instance of the Controller class to handle game logic.
+        self.addCellsToBoard()#Creation of the board.
+        self.agent_turn_UI()#UI element displaying whose turn it is (Agent).
+        self.agent_soldiers_UI()#UI element displaying the number of agent's remaining pieces.
+        self.player_turn_UI()#UI element displaying whose turn it is (Player).
+        self.player_soldiers_UI()#UI element displaying the number of player's remaining pieces.
+        self.addResultLabel()#Label to display the game result (win/loss).
+        self.tutorial()#A flag to indicate if the tutorial mode is active.
+        self.tutorial = False#Button to toggle the tutorial.
+        self.agent_turn(1)#Starts with an agent's turn.
 
     def tutorial(self):
+        #Adds a tutorial button to the screen.
         self.tutorial_button = Button()
         self.tutorial_button.background_color = (0, 1, 1)
         self.tutorial_button.text = "Tutorial"
@@ -52,6 +53,7 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.tutorial_button)
 
     def agent_turn_UI(self):
+        #Adds the UI element to indicate the agent's turn.
         self.agent_turns_button = Button()
         self.agent_turns_button.background_color = (0.5, 0.5, 0.5, 1)
         self.agent_turns_button.text = "Agent"
@@ -61,6 +63,7 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.agent_turns_button)
 
     def agent_soldiers_UI(self):
+        #Adds the UI element to display the number of the agent's remaining soldiers.
         self.agent_soldiers_button = Button()
         self.agent_soldiers_button.background_color = (0.6, 0.6, 0.6, 1)
         self.agent_soldiers_button.text = "X X X X X "
@@ -70,6 +73,7 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.agent_soldiers_button)
 
     def player_turn_UI(self):
+        #Adds the UI element to indicate the player's turn.
         self.player_turns_button = Button()
         self.player_turns_button.background_color = (0.2, 0.6, 0.3, 1)
         self.player_turns_button.text = "You <"
@@ -79,6 +83,7 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.player_turns_button)
 
     def player_soldiers_UI(self):
+        #Adds the UI element to display the number of the player's remaining soldiers.
         self.player_soldiers_button = Button()
         self.player_soldiers_button.background_color = (0.4, 0.7, 0.5, 1)
         self.player_soldiers_button.text = "O O O O O "
@@ -88,6 +93,7 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.player_soldiers_button)
 
     def addButton(self):
+        #Adds the restart button to the screen.
         self.buttonRestart = Button()
         self.buttonRestart.background_color = (0.8, 0.3, 0.3, 1)
         self.buttonRestart.text = "refresh"
@@ -97,6 +103,7 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.buttonRestart)
 
     def addResultLabel(self):
+        #Adds the label to display the result of the game with an animation.
         self.result_label = Label()
         self.result_label.font_size = 5
         self.result_label.color = '#00FF00'
@@ -109,13 +116,15 @@ class FirstScreen(FloatLayout):
         animation.start(self.result_label)
 
     def reset_game(self, instance):
+        #Resets the game board, UI elements, and game state.
         self.clear_board()
         self.result_label.text = ""
         self.agent_soldiers_UI()
         self.player_soldiers_UI()
 
     def addCellsToBoard(self):
-
+        #Draws the game board lines on the canvas and creates Cell widgets for each position.
+        #These cells are stored in outside_board_graph and inside_board_graph lists.
         with self.canvas.before:
             Color(1, 1, 1, 1)  # White color
             # Outer square
@@ -242,6 +251,8 @@ class FirstScreen(FloatLayout):
         self.inside_board_graph.append(self.temp_cell16)
 
     def change_to_boards(self):
+        #Converts the game board state from Cell widgets to numpy arrays for easier processing,
+        #representing player pieces ('O'), agent pieces ('X'), and empty slots.
         outside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         inside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
 
@@ -311,7 +322,8 @@ class FirstScreen(FloatLayout):
         return outside_board, inside_board
 
     def react(self, board, row, col):
-
+        #Handles player interactions, updating the board state based on clicks,
+        #and managing game phases like placement and movement, including mill formation.
         if (row == 1 and col == 2) or row == 2:
             place = row * 3 + col - 1
         else:
@@ -478,6 +490,7 @@ class FirstScreen(FloatLayout):
             return self.part
 
     def game_rules(self):
+        #Creates a button that, when pressed, displays the rules of the Five Men's Morris game via a popup.
         self.rules_button = Button(text="Game Rules",
                                     size_hint=(.2, .1),
                                     pos_hint={"center_x": .375, "center_y": .2})
@@ -487,6 +500,8 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.rules_button)
 
     def show_rules_popup(self, instance):
+        #Displays a popup containing the rules of the Five Men's Morris game, including
+        #placement, moving, flying phases, and how to win.
         rules_text = """
         Five Men's Morris Rules:
 
@@ -513,6 +528,7 @@ class FirstScreen(FloatLayout):
 
 
     def game_size(self):
+        #Creates a button that, when pressed, toggles the game board size between two predefined sizes.
         self.game_size_button = Button(text="Game Size",
                                     size_hint=(.2, .1),
                                     pos_hint={"center_x": .625, "center_y": .2})
@@ -522,6 +538,8 @@ class FirstScreen(FloatLayout):
         self.add_widget(self.game_size_button)
 
     def switch_game_size(self, instance):
+        #Switches the game board size by redrawing the board with different dimensions
+        #on the canvas, effectively toggling between two sizes.
         with self.canvas.before:
             if self.what_game_size == 1:
                 Color(0,0,0)
@@ -573,6 +591,7 @@ class FirstScreen(FloatLayout):
 
 
     def addPlayerTypeButton(self):
+        #Adds a button to cycle through agent difficulty levels, updating its text and binding it to switch the difficulty.
         self.difficulty_button = Button()
         self.update_difficulty_button_text()
         self.difficulty_button.background_color = (0.5, 0.4, 0.7, 1)
@@ -583,6 +602,7 @@ class FirstScreen(FloatLayout):
 
 
     def switch_difficulty(self, instance):
+        #Cycles the agent difficulty, clears the board, and updates the button text.
         self.clear_board()
         self.difficulty += 1
         if self.difficulty > 3:
@@ -591,6 +611,7 @@ class FirstScreen(FloatLayout):
 
 
     def update_difficulty_button_text(self):
+        #Updates the difficulty button's text based on the current agent difficulty level.
         if self.difficulty == 1:
             self.difficulty_button.text = "Agent: Dumb"
         elif self.difficulty == 2:
@@ -599,6 +620,7 @@ class FirstScreen(FloatLayout):
             self.difficulty_button.text = "Agent: Dictionary"
 
     def agent_turn(self, turn):
+        #Executes the AI agent's turn based on the selected difficulty and updates the game board displays.
         if self.difficulty == 1:
             soldier = self.controller.agent_turn_dumb(turn)
         elif self.difficulty == 2:
@@ -670,9 +692,11 @@ class FirstScreen(FloatLayout):
         self.agent_soldiers_button.text = self.agent_soldiers_button.text[:-2]
 
     def the_turn(self):
+        #Returns the current player's turn.
         return self.my_turn
 
     def clear_board(self):
+        #Resets the game board UI and logic to a new game state, including clearing cell texts and colors, resetting the controller, turns, phases, selections, and updating soldier counts, then initiates the agent's first turn.
         for cell in self.outside_board_graph:
             cell.text = ""
             cell.background_color = (0.7, 0.7, 0.7, 1) 
@@ -695,19 +719,21 @@ class FirstScreen(FloatLayout):
 
 
     def check(self, board, row, col):
+        #Delegates the board checking logic for a given cell to the game controller.
         return self.controller.check(board, row, col)
 
 
-class Cell(Button):
+class Cell(Button):#Represents a single cell on the game board, storing its board association and coordinates, and triggering game actions on press.
     def __init__(self, board, row, col):
         Button.__init__(self)
-        self.text = ""
-        self.board = board
-        self.row = row
-        self.col = col
-        self.background_color = (0.7, 0.7, 0.7, 1)
+        self.text = ""#the text
+        self.board = board#which board
+        self.row = row#what row
+        self.col = col#what column
+        self.background_color = (0.7, 0.7, 0.7, 1)#color
 
     def on_press(self):
+        #Handles cell press events, triggering game reactions, checking for a win condition after the initial placement phase, and updating the result label if a win occurs.
         part = self.parent.react(self.board, self.row, self.col)
         my_turn = self.parent.the_turn()
         if my_turn > 5:
@@ -721,95 +747,116 @@ class Cell(Button):
                 self.parent.result_label.text = "The player won!!"
 
 class Controller:
+    #Acts as an intermediary between the UI and the game logic, delegating method calls to the `Logic` class.
     def __init__(self):
+        #Initializes the Controller with an instance of the Logic class.
         self.logic = Logic()
 
     def check(self, board, row, col):
+        #Delegates the cell checking logic to the Logic instance.
         return self.logic.check(board, row, col)
 
     def check_three_self(self, player, board, row, col):
+        #Delegates the checking for three in a row/column logic to the Logic instance.
         return self.logic.check_three_self(player, board, row, col)
 
     def list_of_players_self(self, player):
+        #Delegates the retrieval of a player's occupied cells to the Logic instance.
         return self.logic.list_of_players_self(player)
 
     def check_win_board(self):
+        #Delegates the board win condition checking to the Logic instance.
         return self.logic.check_win_board()
 
     def agent_turn(self, turn):
+        #Delegates the standard AI agent's turn logic to the Logic instance.
         return self.logic.agent_turn(turn)
 
     def agent_turn_ANN(self, turn):
+        #Delegates the AI agent's turn logic using an Artificial Neural Network to the Logic instance.
         return self.logic.agent_turn_ANN(turn)
 
     def agent_turn_dumb(self, turn):
+        #Delegates a simpler, 'dumb' AI agent's turn logic to the Logic instance.
         return self.logic.agent_turn_dumb(turn)
 
     def player_turn(self, outside_board, inside_board):
+        #Delegates the player's turn logic to the Logic instance.
         return self.logic.player_turn(outside_board, inside_board)
 
     def reset_board(self):
+        #Delegates the board reset logic to the Logic instance.
         self.logic.reset_board()
 
     def which_part(self, turn):
+        #Delegates the determination of the current game phase based on the turn number to the Logic instance.
         return self.logic.which_part(turn)
 
     def between_boards(self, row, col):
+        #Delegates the check for whether a coordinate lies between the inner and outer boards to the Logic instance.
         return self.logic.between_boards(row, col)
 
     def edge_is_valid(self, curr_row, curr_col, row, col):
+        #Delegates the validation of a move to an adjacent edge cell to the Logic instance.
         return self.logic.edge_is_valid(curr_row, curr_col, row, col)
 
     def edge_can_move(self, board, row, col):
+        #Delegates the check for whether an edge cell has valid moves to the Logic instance.
         return self.logic.edge_can_move(board, row, col)
 
     def mid_is_valid(self, curr_row, curr_col, row, col):
+        #Delegates the validation of a move to an adjacent middle cell to the Logic instance.
         return self.logic.mid_is_valid(curr_row, curr_col, row, col)
 
     def mid_can_move(self, board, row, col):
+        #Delegates the check for whether a middle cell has valid moves to the Logic instance.
         return self.logic.mid_can_move(board, row, col)
 
     def return_boards(self):
+        #Delegates the retrieval of the current game board states to the Logic instance.
         return self.logic.return_boards()
 
     def print_board(self):
+        #Delegates the printing of the game board to the Logic instance.
         self.logic.print_board()
 
-class Logic:
+class Logic:#Responsible for the game's logic.
     def __init__(self):
         # 0 = empty, 1 = X = agent, -1 = O = player
-        self.outside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-        self.inside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-        self.model_init = tf.keras.models.load_model('initial_model1.keras')
-        self.model_reg = tf.keras.models.load_model('reg_model1.keras')
-        self.model_player_special = tf.keras.models.load_model('player_special_model1.keras')
-        self.model_agent_special = tf.keras.models.load_model('agent_special_model1.keras')
-        self.model_special = tf.keras.models.load_model('special_model1.keras')
+        self.outside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])#The outside part of the board.
+        self.inside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])#The outside part of the board.
+        self.model_init = tf.keras.models.load_model('initial_model1.keras')#The model of the initialization part.
+        self.model_reg = tf.keras.models.load_model('reg_model1.keras')#The model of the regular part.
+        self.model_player_special = tf.keras.models.load_model('player_special_model1.keras')#The model where the player moves specially and the agent regularly.
+        self.model_agent_special = tf.keras.models.load_model('agent_special_model1.keras')#The model where the agent moves specially and the player regularly.
+        self.model_special = tf.keras.models.load_model('special_model1.keras')#The model of the special part.
         filename = 'dict_init.json'
         with open(filename, 'r') as json_file:
-            self.dict1 = json.load(json_file)
+            self.dict1 = json.load(json_file)#The dictionary of the initialization part.
 
         filename = 'dict_reg.json'
         with open(filename, 'r') as json_file:
-            self.dict2 = json.load(json_file)
+            self.dict2 = json.load(json_file)#The dictionary of the regular part.
 
         filename = 'dict_player_special.json'
         with open(filename, 'r') as json_file:
-            self.dict3 = json.load(json_file)
+            self.dict3 = json.load(json_file)#The dictionary where the player moves specially and the agent regularly.
 
         filename = 'dict_agent_special.json'
         with open(filename, 'r') as json_file:
-            self.dict4 = json.load(json_file)
+            self.dict4 = json.load(json_file)#The dictionary where the agent moves specially and the player regularly.
 
         filename = 'dict_special.json'
         with open(filename, 'r') as json_file:
-            self.dict5 = json.load(json_file)
+            self.dict5 = json.load(json_file)#The dictionary of the special part.
 
     def return_boards(self):
+        #Returns the current states of the outside and inside boards as a tuple of numpy arrays.
         return self.outside_board, self.inside_board
 
 
     def check(self, board, row, col):
+        #Checks if a specific cell on the given board (0: outside, 1: inside) is empty.
         if board == 0:
             if self.outside_board[row][col] == 0:
                 return True
@@ -819,6 +866,7 @@ class Logic:
         return False
 
     def empty_places_outside(self, outside_board, inside_board):
+        #Finds the empty cells on the outside board and returns their coordinates [row, col] in a list.
         empty_list = list()
         for n in range(3):
             for j in range(3):
@@ -828,6 +876,7 @@ class Logic:
         return empty_list
 
     def empty_places_inside(self, outside_board, inside_board):
+        #Finds the empty cells on the inside board and returns their coordinates [row, col] in a list.
         empty_list = list()
         for n in range(3):
             for j in range(3):
@@ -838,6 +887,7 @@ class Logic:
 
 
     def list_of_players_self(self, player):
+        #returns a list that contains the placement of every player's soldier on the current board
         players_list = list()
         for n in range(3):
             for j in range(3):
@@ -853,6 +903,7 @@ class Logic:
 
 
     def list_of_players(self, outside_board, inside_board, player):
+        #returns a list that contains the placement of every player's soldier on any board
         players_list = list()
         for n in range(3):
             for j in range(3):
@@ -868,6 +919,7 @@ class Logic:
 
 
     def change_to_string2(self, outside_board, inside_board):
+        # changes the boards we get from arrays to a string
         board_str = ""
         for i in range(3):
             for j in range(3):
@@ -892,6 +944,7 @@ class Logic:
         return board_str
 
     def check_three_self(self, player, board, row, col):
+        # checks wether or not there is a new three created for a certain player in the current board
         if board == 0:
             if self.between_boards(row,col) == True:
                 if row == 1:
@@ -954,6 +1007,7 @@ class Logic:
         return False
 
     def check_three(self, outside_board, inside_board, player, board, row, col):
+        # checks wether or not there is a new three created for a certain player in any board
         if board == 0:
             if self.between_boards(row,col) == True:
                 if row == 1:
@@ -1016,6 +1070,7 @@ class Logic:
         return False
 
     def smart_a_remove(self, dict1, dict2, str1):
+        # checks the dictionary for the best player's soldier to remove
         best_take = str1
         current_score = -1
         best_score = -1
@@ -1041,6 +1096,7 @@ class Logic:
         return best_take
 
     def change_from_string(self,string):
+        # gets a string and returns the board as 2, 2D arrays
         outside_board = np.zeros((3, 3), dtype=int)
         inside_board = np.zeros((3, 3), dtype=int)
         for i in range((len(string)//2)):
@@ -1084,6 +1140,7 @@ class Logic:
         return outside_board, inside_board
 
     def between_boards(self, row,col):
+        # return true if the given place is in a position to switch boards
         if row == 0 and col == 1:
             return True
         if row == 1 and col == 0:
@@ -1095,6 +1152,7 @@ class Logic:
         return False
 
     def all_places_available(self,outside_board, inside_board, board,row,col):
+        # returns a list of all the valid moves for a certain soldier in a regular moving ability
         empty_list_outside = self.empty_places_outside(outside_board, inside_board)
         empty_list_inside = self.empty_places_inside(outside_board, inside_board)
         all_places_available = list()
@@ -1153,6 +1211,7 @@ class Logic:
         return all_places_available
 
     def one_person_check_last_stage(self):
+        # checks wether or not one of the players has 3 players
         if len(self.list_of_players(self.outside_board, self.inside_board, 1)) == 3:
             return 1
         elif len(self.list_of_players(self.outside_board, self.inside_board, -1)) == 3:
@@ -1161,6 +1220,7 @@ class Logic:
         return 0
 
     def check_last_stage(self):
+        # checks wether or not we have arrived to the last stage of the game where both players have 3 soldiers
         if len(self.list_of_players(self.outside_board, self.inside_board,1)) == 3 and len(self.list_of_players(self.outside_board, self.inside_board,-1)) == 3:
             return True
 
@@ -1168,6 +1228,7 @@ class Logic:
 
 
     def which_part(self, turn):
+        #checks and returns what part of the 5 parts we are in
         if turn<=5:
             return 1
         elif self.check_last_stage() == True:
@@ -1181,6 +1242,7 @@ class Logic:
 
 
     def edge_is_valid(self, curr_row, curr_col, row, col):
+        # checking wether or not a move for a soldier that was in an edge is valid
         if row == 1 and curr_col == col:
             return True
 
@@ -1190,6 +1252,7 @@ class Logic:
         return False
 
     def edge_can_move(self, board, row, col):
+        # checking wether or not an edge piece chosen has a valid move to make
         empty_list_outside = self.empty_places_outside(self.outside_board, self.inside_board)
         empty_list_inside = self.empty_places_inside(self.outside_board, self.inside_board)
         if board == 0:
@@ -1212,6 +1275,7 @@ class Logic:
 
 
     def mid_is_valid(self, curr_row, curr_col, row, col):
+        # checking wether or not a move for a soldier that was in a middle position is valid
         if curr_row == row and curr_col == col:
             return True
         if curr_row == 0 and curr_row == row:
@@ -1230,6 +1294,7 @@ class Logic:
         return False
 
     def mid_can_move(self, board, row, col):
+        # checking wether or not a middle position piece chosen has a valid move to make
         empty_list_outside = self.empty_places_outside(self.outside_board, self.inside_board)
         empty_list_inside = self.empty_places_inside(self.outside_board, self.inside_board)
         if board == 0:
@@ -1272,10 +1337,12 @@ class Logic:
         return False
 
     def player_turn(self, outside_board1, inside_board1):
+        #gets the boards from the graphics after a player's turn and updates the turn in the logic
         self.outside_board = outside_board1
         self.inside_board = inside_board1
 
     def agent_turn(self, turn):
+        #chooses what type of agent turn is required
         if turn<5:
             return self.agent_turn_init(self.outside_board, self.inside_board, self.dict1)
         elif self.check_last_stage() == True:
@@ -1288,6 +1355,7 @@ class Logic:
             return self.agent_turn_reg(self.outside_board, self.inside_board,self.dict3, self.dict5)
 
     def agent_turn_init(self,outside_board, inside_board, dict_init):
+        # check the dictionary for the best placement of the agent's soldier in the initialization part of the game
         player_list = self.list_of_players(outside_board, inside_board, 1)
         best_score = -1
         best_board = '----------------'
@@ -1362,6 +1430,7 @@ class Logic:
         return soldier
 
     def agent_turn_reg(self,outside_board, inside_board, dict_reg, dict1):
+        # check the dictionary for the best placement of the agent's soldier in the regular part of the game
         player_list = self.list_of_players(outside_board, inside_board, 1)
         best_score = -1
         best_board = '----------------'
@@ -1421,6 +1490,7 @@ class Logic:
 
 
     def agent_turn_special(self,outside_board, inside_board,  dict_special, dict1):
+        # check the dictionary for the best placement of the agent's soldier in the special part of the game
         player_list = self.list_of_players(outside_board, inside_board, 1)
         empty_places_outside = self.empty_places_outside(outside_board, inside_board)
         empty_places_inside = self.empty_places_inside(outside_board, inside_board)
@@ -1513,6 +1583,7 @@ class Logic:
         return soldier
 
     def turn_to_array(self, str1):
+        #turns a string that represents a board into an array that represents a board
         row = np.zeros(16, dtype=int)
         for i in range(16):
             char = str1[i]
@@ -1527,6 +1598,7 @@ class Logic:
         return row
 
     def part(self, str1, is_init):
+        #returns what part we are in
         count_player = -1
         for i in range(len(str1)):
             if str1[i] == 'o':
@@ -1547,6 +1619,7 @@ class Logic:
             return 5
 
     def smart_a_remove_ANN(self, model1, model2, str1, is_init, part1):
+        #removes enemy using models
         part2 = self.part(str1, is_init)
         best_take = str1
         current_score = -1
@@ -1576,6 +1649,7 @@ class Logic:
         return best_take
 
     def agent_turn_ANN(self, turn):
+        #chooses which agent turn is required
         if turn<5:
             return self.agent_turn_init_ANN(self.outside_board, self.inside_board, self.model_init)
         elif self.check_last_stage() == True:
@@ -1588,6 +1662,7 @@ class Logic:
             return self.agent_turn_reg_ANN(self.outside_board, self.inside_board,self.model_player_special, self.model_special , 3)
 
     def agent_turn_init_ANN(self,outside_board, inside_board, model):
+        # check the model for the best placement of the agent's soldier in the initialization part of the game
         player_list = self.list_of_players(outside_board, inside_board, 1)
         best_score = -1
         best_board = '----------------'
@@ -1663,6 +1738,7 @@ class Logic:
         return soldier
 
     def agent_turn_reg_ANN(self,outside_board, inside_board, model1, model2, part):
+        # check the model for the best placement of the agent's soldier in the regular part of the game
         player_list = self.list_of_players(outside_board, inside_board, 1)
         best_score = -1
         best_board = '----------------'
@@ -1721,6 +1797,7 @@ class Logic:
 
 
     def agent_turn_special_ANN(self,outside_board, inside_board,  model1, model2, part):
+        # check the model for the best placement of the agent's soldier in the special part of the game
         player_list = self.list_of_players(outside_board, inside_board, 1)
         empty_places_outside = self.empty_places_outside(outside_board, inside_board)
         empty_places_inside = self.empty_places_inside(outside_board, inside_board)
@@ -1811,6 +1888,7 @@ class Logic:
         return soldier
 
     def agent_turn_dumb(self, turn):
+        #chooses which agent turn is required
         if turn<5:
             return self.agent_turn_init_dumb()
         elif self.check_last_stage() == True:
@@ -2031,6 +2109,7 @@ class Logic:
         return soldier
 
     def check_win_board(self):
+        # checks and returns 1 if the agent has won, -1 if the player has won and 0 if there is no win
         count_1 = 0
         count_2= 0
         for n in range(3):
@@ -2054,6 +2133,7 @@ class Logic:
         return 0
 
     def reset_board(self):
+        #resets the board
         self.outside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         self.inside_board = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
 
@@ -2080,6 +2160,7 @@ class Logic:
         pass
 
     def print_board(self):
+        #prints the board
         for i in range(2):
             print(self.outside_board[0][i], end=" ------ ")
         print(self.outside_board[0][2], end="")
